@@ -19,6 +19,7 @@ import os
 import sys
 
 from .apex_runner import ApexRunner
+from .domain_coordinator import get_coordinated_domain_id
 from .junitxml import unittestResultsToXml
 from .print_arguments import print_arguments_of_launch_description
 
@@ -52,6 +53,11 @@ def apex_launchtest_main():
                         default=False,
                         help='Show arguments that may be given to the test file.')
 
+    parser.add_argument('--disable-ros-isolation',
+                        action="store_true",
+                        default=False,
+                        help="Do not set a ROS_DOMAIN_ID.  Useful for debugging ROS tests")
+
     parser.add_argument(
         'launch_arguments',
         nargs='*',
@@ -71,6 +77,11 @@ def apex_launchtest_main():
     if args.verbose:
         _logger_.setLevel(logging.DEBUG)
         _logger_.debug("Running with verbose output")
+
+    if not args.disable_ros_isolation:
+        domain_id = get_coordinated_domain_id()  # Must copy this to a local to keep it alive
+        _logger_.debug("Running with ROS_DOMAIN_ID {}".format(domain_id))
+        os.environ["ROS_DOMAIN_ID"] = str(domain_id)
 
     # Load the test file as a module and make sure it has the required
     # components to run it as an apex integration test
