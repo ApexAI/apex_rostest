@@ -50,7 +50,10 @@ class SequentialTextChecker:
             array_index += 1
             substring_index = 0
 
-        assert False, "'{}' not found in output. Output near the last matched line:\n{}".format(
+        assert False, (
+            "'{}' not found in sequence after previous match.  "
+            "The output near the last matched line:\n{}"
+        ).format(
             msg,
             self.get_nearby_lines()
         )
@@ -64,11 +67,11 @@ class SequentialTextChecker:
         start_idx = max(0, self._array_index - 2)
         end_idx = self._array_index + 4
 
-        full_text = "\n".join(self._output[start_idx:end_idx]) + '\n'
+        full_text = "".join(self._output[start_idx:end_idx])
 
         current_absolute_position = self._substring_index
         for txt in self._output[start_idx:self._array_index]:
-            current_absolute_position += len(txt) + 1
+            current_absolute_position += len(txt)
 
         start_abs_position = current_absolute_position
         for _ in range(3):

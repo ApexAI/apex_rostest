@@ -21,14 +21,14 @@ class TestAssertSequentialStdout(unittest.TestCase):
 
     def setUp(self):
         self.to_check = [
-            "output 10",
-            "output 15",
-            "output 20",
-            "multi-line 1\nmulti-line 2\nmulti-line 3",
-            "aaaaa bbbbb ccccc ddddd eeeee fffff ggggg hhhhh iiiii jjjjj",  # long line
-            "xxxxx yyyyy\nsome dummy text\nzzzzz",  # mix of long line and multi-line
-            "output 20",
-            "!@#$%^&*()",  # Help find off by one errors in the substring logic
+            "output 10\n",
+            "output 15\n",
+            "output 20\n",
+            "multi-line 1\nmulti-line 2\nmulti-line 3\n",
+            "aaaaa bbbbb ccccc ddddd eeeee fffff ggggg hhhhh iiiii jjjjj\n",  # long line
+            "xxxxx yyyyy\nsome dummy text\nzzzzz\n",  # mix of long line and multi-line
+            "output 20\n",
+            "!@#$%^&*()\n",  # Help find off by one errors in the substring logic
         ]
 
         self.dut = SequentialTextChecker(self.to_check)
