@@ -93,3 +93,151 @@ class TestAssertSequentialStdout(unittest.TestCase):
 
         with self.assertRaises(AssertionError):
             self.dut.assertInStdout("yyyyy")
+
+    # We want the error message to display the line we last matched, plus two lines before and
+    # two lines after
+    # The test cases below check that the error message contains useful information for the
+    # following test cases:
+    # 1. No matching has ocurred yet
+    # 2. We just matched the first line of output so there are no lines before to print
+    # 3. We just matched the last line of output so there are no lines after to print
+    # 4. We just matched the second line of output so there is only one line before to print
+    # 5. We just matched the second to last line of output so there's only one line after to print
+    # 6. We match a line in the middle, so there are two lines before and after to print
+
+    def test_checker_error_message_1(self):
+        with self.assertRaises(AssertionError) as cm:
+            self.dut.assertInStdout("I am the very model of a modern major general")
+
+        print(cm.exception)
+
+        expected = "output 10\noutput 15\noutput 20"
+        self.assertIn(
+            expected,
+            str(cm.exception)
+        )
+        self.assertEqual(
+            expected,
+            self.dut.get_nearby_lines()
+        )
+
+    def test_checker_error_message_2(self):
+        # In this test, our current line is still the 0th line.
+        with self.assertRaises(AssertionError) as cm:
+            self.dut.assertInStdout("output")
+            self.dut.assertInStdout("I am the very model of a modern major general")
+
+        print(cm.exception)
+
+        expected = "output 10\noutput 15\noutput 20"
+
+        self.assertIn(
+            expected,
+            str(cm.exception)
+        )
+
+        self.assertEqual(
+            expected,
+            self.dut.get_nearby_lines()
+        )
+
+    def test_checker_error_message_3(self):
+        with self.assertRaises(AssertionError) as cm:
+            self.dut.assertInStdout("!@#")
+            self.dut.assertInStdout("I am the very model of a modern major general")
+
+        print(cm.exception)
+
+        expected = "zzzzz\noutput 20\n!@#$%^&*()"
+
+        self.assertIn(
+            expected,
+            str(cm.exception)
+        )
+
+        self.assertEqual(
+            expected,
+            self.dut.get_nearby_lines()
+        )
+
+    def test_checker_error_message_4(self):
+        # Because we asserted on the whole first line.  Our current line is
+        # now the 1st line, so we expect to see 0th, 1 (current), 2, and 3 (current + 2) in the
+        # error message output
+        with self.assertRaises(AssertionError) as cm:
+            self.dut.assertInStdout("output 10")
+            self.dut.assertInStdout("I am the very model of a modern major general")
+
+        print(cm.exception)
+
+        expected = "output 10\noutput 15\noutput 20\nmulti-line 1"
+
+        self.assertIn(
+            expected,
+            str(cm.exception)
+        )
+
+        self.assertEqual(
+            expected,
+            self.dut.get_nearby_lines()
+        )
+
+    def test_checker_error_message_4_1(self):
+        # Match the middle of the 2nd line - should behave the same as test message_4 above
+        with self.assertRaises(AssertionError) as cm:
+            self.dut.assertInStdout("output")
+            self.dut.assertInStdout("output")
+            self.dut.assertInStdout("I am the very model of a modern major general")
+
+        print(cm.exception)
+
+        expected = "output 10\noutput 15\noutput 20\nmulti-line 1"
+
+        self.assertIn(
+            expected,
+            str(cm.exception)
+        )
+
+        self.assertEqual(
+            expected,
+            self.dut.get_nearby_lines()
+        )
+
+    def test_checker_error_message_5(self):
+        with self.assertRaises(AssertionError) as cm:
+            self.dut.assertInStdout("output 20")
+            self.dut.assertInStdout("output 2")
+            self.dut.assertInStdout("I am the very model of a modern major general")
+
+        print(cm.exception)
+
+        expected = "some dummy text\nzzzzz\noutput 20\n!@#$%^&*()"
+
+        self.assertIn(
+            expected,
+            str(cm.exception)
+        )
+
+        self.assertEqual(
+            expected,
+            self.dut.get_nearby_lines()
+        )
+
+    def test_checker_error_message_6(self):
+        with self.assertRaises(AssertionError) as cm:
+            self.dut.assertInStdout("multi")
+            self.dut.assertInStdout("I am the very model of a modern major general")
+
+        print(cm.exception)
+
+        expected = "output 15\noutput 20\nmulti-line 1\nmulti-line 2\nmulti-line 3"
+
+        self.assertIn(
+            expected,
+            str(cm.exception)
+        )
+
+        self.assertEqual(
+            expected,
+            self.dut.get_nearby_lines()
+        )
