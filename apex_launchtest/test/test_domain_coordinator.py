@@ -15,20 +15,22 @@
 import unittest
 
 import apex_launchtest.domain_coordinator
+from apex_launchtest.domain_coordinator import get_coordinated_domain_id
 
 
 class TestUniqueness(unittest.TestCase):
 
     def test_quickly(self):
-        # Quick and simple test to see that we generate unique domains.  Will not necessarily
-        # find problems because domains are selected randomly.  We're only asking for 10
-        # domains out of 100 so most of the time we'll probably get lucky
-        domains = []
+        """
+        Quick test with false negatives, but simple and easy to understand.
 
-        for _ in range(10):
-            domains.append(apex_launchtest.domain_coordinator.get_coordinated_domain_id())
+        See that we generate unique domains.  Will not necessarily find problems because domains
+        are selected randomly.  We're only asking for 10 domains out of 100 so most of the time
+        we'll probably get lucky.
+        """
+        domains = [get_coordinated_domain_id() for _ in range(10)]
 
-        domain_ids = list(map(lambda x: str(x), domains))
+        domain_ids = [str(domain) for domain in domains]
 
         self.assertEqual(
             sorted(domain_ids),
@@ -40,7 +42,7 @@ class TestUniqueness(unittest.TestCase):
         domain = apex_launchtest.domain_coordinator.get_coordinated_domain_id(
             selector=lambda: 42  # Force it to select '42' as the domain every time it tries
         )
-        self.assertEquals("42", str(domain))
+        self.assertEqual("42", str(domain))
 
         # Now that we've already got domain 42 reserved, this call should fail:
         with self.assertRaises(Exception) as cm:
@@ -63,18 +65,11 @@ class TestUniqueness(unittest.TestCase):
                 finally:
                     self._sequence += 1
 
-        domains = []
-
-        for _ in range(10):
-            domains.append(
-                apex_launchtest.domain_coordinator.get_coordinated_domain_id(
-                    selector=sequence_gen()
-                )
-            )
+        domains = [get_coordinated_domain_id(selector=sequence_gen()) for _ in range(10)]
 
         self.assertEqual(
             ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
-            list(map(lambda x: str(x), domains))
+            [str(domain) for domain in domains]
         )
 
 
@@ -91,13 +86,10 @@ class TestSelector(unittest.TestCase):
     def test_selector_values_are_unique(self):
         selector = apex_launchtest.domain_coordinator._default_selector()
 
-        seen_values = []
-
         # The default sequencer should produce 100 unique values before it starts to repeat.
-        for n in range(100):
-            seen_values.append(selector())
+        seen_values = [selector() for _ in range(100)]
 
         self.assertEqual(
             sorted(seen_values),
-            list([n + 1 for n in range(100)])
+            [n + 1 for n in range(100)]
         )
