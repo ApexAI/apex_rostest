@@ -5,7 +5,7 @@
 Usage:
 > apex_launchtest examples/talker_listener.test.py
 
-This test launchtes the talker and listener example nodes from demo_nodes_py and interacts
+This test launches the talker and listener example nodes from demo_nodes_py and interacts
 with them via their ROS interfaces.  Remaps are used so that one of the tests can sit in
 between the talker and the listener and change the data on the fly.
 
