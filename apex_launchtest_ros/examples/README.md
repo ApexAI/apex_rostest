@@ -27,5 +27,5 @@ This test publishes unique messages on the /chatter topic and asserts that the s
 go to the stdout of the listener node
 
 #### test_talker_transmits
-This test subscribes to the remapped /talker_chatter topic and makes sure the talker node also
+This test subscribes to the remapped `/talker_chatter` topic and makes sure the talker node also
 writes the data it's transmitting to stdout
