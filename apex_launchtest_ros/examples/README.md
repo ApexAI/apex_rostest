@@ -23,7 +23,7 @@ and publisher pair encapsulated in a `DataRepublisher` object changes the string
 "Aloha World" as it travels between the talker and the listener.
 
 #### test_listener_receives
-This test publishes unique messages on the /chatter topic and asserts that the same messages
+This test publishes unique messages on the `/chatter` topic and asserts that the same messages
 go to the stdout of the listener node
 
 #### test_talker_transmits
