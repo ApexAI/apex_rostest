@@ -20,7 +20,7 @@ are simple example nodes.
 #### test_fuzzy_data
 This test gives an example of what a test that fuzzes data might look like.  A ROS subscriber
 and publisher pair encapsulated in a `DataRepublisher` object changes the string "Hello World" to
-"Aloha World" as it travles between the talker and the listener
+"Aloha World" as it travels between the talker and the listener.
 
 #### test_listener_receives
 This test publishes unique messages on the /chatter topic and asserts that the same messages
