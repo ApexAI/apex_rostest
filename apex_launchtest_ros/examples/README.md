@@ -12,7 +12,7 @@ between the talker and the listener and change the data on the fly.
 Node that in the setUpClass method, the test makes sure that the listener is subscribed and
 republishing messages.  Since the listener process provides no synchronization mechanism to
 inform the outside world that it's up and running, this step is necessary especially in resource
-constrained environments where process startup may take a non negligable amount of time.  This
+constrained environments where process startup may take a non negligible amount of time.  This
 is often the cause of "flakyness" in tests on CI systems.  A more robust design of the talker and
 listener processes might provide some positive feedback that the node is up and running, but these
 are simple example nodes.
