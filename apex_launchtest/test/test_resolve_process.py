@@ -14,11 +14,10 @@
 
 import unittest
 
-import launch.actions
-import launch.substitutions
-
 import apex_launchtest
 import apex_launchtest.util
+import launch.actions
+import launch.substitutions
 
 
 class TestResolveProcess(unittest.TestCase):
@@ -44,14 +43,14 @@ class TestResolveProcess(unittest.TestCase):
 
         # We'll get a good error mesasge here because there were no substitutions in
         # the execute process cmd - it's all text
-        self.assertIn("python -c", str(cm.exception))
+        self.assertIn('python -c', str(cm.exception))
 
     def test_unlaunched_process_lookup_with_substitutions(self):
         info_obj = apex_launchtest.ProcInfoHandler()
 
         lookup_obj = launch.actions.ExecuteProcess(
             cmd=[
-                launch.substitutions.LocalSubstitution("foo"),
+                launch.substitutions.LocalSubstitution('foo'),
                 'python',
                 '-c',
                 '',
@@ -66,4 +65,4 @@ class TestResolveProcess(unittest.TestCase):
 
         # Since the process wasn't launched yet, and it has substitutions that need to be
         # resolved by the launch system, we won't be able to take a guess at the command
-        self.assertIn("Unknown", str(cm.exception))
+        self.assertIn('Unknown', str(cm.exception))

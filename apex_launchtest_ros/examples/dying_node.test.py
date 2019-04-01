@@ -41,12 +41,12 @@ class ExampleTest(unittest.TestCase):
 
         test_pub = self.node.create_publisher(
             msg_type=std_msgs.msg.String,
-            topic="self_destruct"
+            topic='self_destruct'
         )
 
         time.sleep(1.0)
         msg = std_msgs.msg.String()
-        msg.data = "kill the node under test"
+        msg.data = 'kill the node under test'
         test_pub.publish(msg)
 
         time.sleep(1.0)

@@ -17,27 +17,25 @@ import threading
 import unittest
 import uuid
 
+from apex_launchtest.event_handlers import StdoutReadyListener
 from launch import LaunchDescription
-from launch.actions import RegisterEventHandler
 from launch.actions import OpaqueFunction
+from launch.actions import RegisterEventHandler
 from launch_ros.actions import Node
 import rclpy
-
 import std_msgs.msg
-
-from apex_launchtest.event_handlers import StdoutReadyListener
 
 
 def generate_test_description(ready_fn):
     node_env = os.environ.copy()
-    node_env["PYTHONUNBUFFERED"] = "1"
+    node_env['PYTHONUNBUFFERED'] = '1'
 
     return LaunchDescription([
         Node(package='apex_launchtest', node_executable='echo_node', env=node_env),
         RegisterEventHandler(
             StdoutReadyListener(
-                "echo_node",
-                "ready",
+                'echo_node',
+                'ready',
                 actions=[OpaqueFunction(function=lambda context: ready_fn())]
             )
         )
@@ -51,7 +49,7 @@ class MessageListener:
         self.event = threading.Event()
 
     def callback(self, msg):
-        print("got msg {}".format(msg.data))
+        print('got msg {}'.format(msg.data))
         self.msg = msg
         self.event.set()
 
@@ -66,12 +64,12 @@ class TestEcho(unittest.TestCase):
         # echo topic
         pub = self.node.create_publisher(
             msg_type=std_msgs.msg.String,
-            topic="listen"
+            topic='listen'
         )
 
         self.node.create_subscription(
             msg_type=std_msgs.msg.String,
-            topic="echo",
+            topic='echo',
             callback=msg_listener.callback
         )
 
@@ -86,6 +84,6 @@ class TestEcho(unittest.TestCase):
                 break
 
         self.assertTrue(msg_listener.event.wait(0),
-                        "Timed out waiting for echo")
+                        'Timed out waiting for echo')
 
         self.assertEqual(msg.data, msg_listener.msg.data)

@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import argparse
-import logging
 from importlib.machinery import SourceFileLoader
+import logging
 import os
 import sys
 
@@ -38,15 +38,15 @@ def apex_launchtest_main():
     logging.basicConfig()
 
     parser = argparse.ArgumentParser(
-        description="Integration test framework for Apex AI"
+        description='Integration test framework for Apex AI'
     )
 
     parser.add_argument('test_file')
 
     parser.add_argument('-v', '--verbose',
-                        action="store_true",
+                        action='store_true',
                         default=False,
-                        help="Run with verbose output")
+                        help='Run with verbose output')
 
     parser.add_argument('-s', '--show-args', '--show-arguments',
                         action='store_true',
@@ -54,9 +54,9 @@ def apex_launchtest_main():
                         help='Show arguments that may be given to the test file.')
 
     parser.add_argument('--disable-ros-isolation',
-                        action="store_true",
+                        action='store_true',
                         default=False,
-                        help="Do not set a ROS_DOMAIN_ID.  Useful for debugging ROS tests")
+                        help='Do not set a ROS_DOMAIN_ID.  Useful for debugging ROS tests')
 
     parser.add_argument(
         'launch_arguments',
@@ -65,23 +65,23 @@ def apex_launchtest_main():
     )
 
     parser.add_argument(
-        "--junit-xml",
-        action="store",
-        dest="xmlpath",
+        '--junit-xml',
+        action='store',
+        dest='xmlpath',
         default=None,
-        help="write junit XML style report to specified path"
+        help='write junit XML style report to specified path'
     )
 
     args = parser.parse_args()
 
     if args.verbose:
         _logger_.setLevel(logging.DEBUG)
-        _logger_.debug("Running with verbose output")
+        _logger_.debug('Running with verbose output')
 
     if not args.disable_ros_isolation:
         domain_id = get_coordinated_domain_id()  # Must copy this to a local to keep it alive
-        _logger_.debug("Running with ROS_DOMAIN_ID {}".format(domain_id))
-        os.environ["ROS_DOMAIN_ID"] = str(domain_id)
+        _logger_.debug('Running with ROS_DOMAIN_ID {}'.format(domain_id))
+        os.environ['ROS_DOMAIN_ID'] = str(domain_id)
 
     # Load the test file as a module and make sure it has the required
     # components to run it as an apex integration test
@@ -93,14 +93,14 @@ def apex_launchtest_main():
     args.test_file = os.path.abspath(args.test_file)
     test_module = _load_python_file_as_module(args.test_file)
 
-    _logger_.debug("Checking for generate_test_description")
+    _logger_.debug('Checking for generate_test_description')
     if not hasattr(test_module, 'generate_test_description'):
         parser.error(
             "Test file '{}' is missing generate_test_description function".format(args.test_file)
         )
 
     dut_test_description_func = test_module.generate_test_description
-    _logger_.debug("Checking generate_test_description function signature")
+    _logger_.debug('Checking generate_test_description function signature')
 
     runner = ApexRunner(
         gen_launch_description_fn=dut_test_description_func,
@@ -109,7 +109,7 @@ def apex_launchtest_main():
         debug=args.verbose
     )
 
-    _logger_.debug("Validating test configuration")
+    _logger_.debug('Validating test configuration')
     try:
         runner.validate()
     except Exception as e:
@@ -121,16 +121,16 @@ def apex_launchtest_main():
         )
         sys.exit(0)
 
-    _logger_.debug("Running integration test")
+    _logger_.debug('Running integration test')
     try:
         result, postcheck_result = runner.run()
-        _logger_.debug("Done running integration test")
+        _logger_.debug('Done running integration test')
 
         if args.xmlpath:
             xml_report = unittestResultsToXml(
                 test_results={
-                    "active_tests": result,
-                    "after_shutdown_tests": postcheck_result
+                    'active_tests': result,
+                    'after_shutdown_tests': postcheck_result
                 }
             )
             xml_report.write(args.xmlpath, xml_declaration=True)

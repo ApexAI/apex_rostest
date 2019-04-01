@@ -13,14 +13,14 @@
 # limitations under the License.
 
 import imp
-import mock
 import os
 
 import ament_index_python
+from apex_launchtest.apex_runner import ApexRunner
 import launch
 import launch.actions
 
-from apex_launchtest.apex_runner import ApexRunner
+import mock
 
 
 # Run tests on processes that die early with an exit code and make sure the results returned
@@ -56,7 +56,7 @@ def test_dut_that_shuts_down(capsys):
     # This is the negative version of the test below.  If no exit code, no extra output
     # is generated
     out, err = capsys.readouterr()
-    assert "Starting Up" not in out
+    assert 'Starting Up' not in out
 
 
 def test_dut_that_has_exception(capsys):
@@ -103,8 +103,8 @@ def test_dut_that_has_exception(capsys):
 
     # Make sure some information about WHY the process died shows up in the output
     out, err = capsys.readouterr()
-    assert "Starting Up" in out
-    assert "Process had a pretend error" in out  # This is the exception text from exception_node
+    assert 'Starting Up' in out
+    assert 'Process had a pretend error' in out  # This is the exception text from exception_node
 
 
 # Run some known good tests to check the nominal-good test path
@@ -126,7 +126,7 @@ class PostTest(unittest.TestCase):
     def test_post_ok(self):
         pass
     """
-    module = imp.new_module("test_module")
+    module = imp.new_module('test_module')
     exec(test_code, module.__dict__)
 
     # Here's the actual 'test' part of the test:

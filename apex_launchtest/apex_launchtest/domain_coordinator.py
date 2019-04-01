@@ -60,10 +60,10 @@ def get_coordinated_domain_id(*, selector=None):
     for attempt in range(100):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
-            s.bind(("", _PORT_BASE + selector()))
+            s.bind(('', _PORT_BASE + selector()))
         except OSError:
             continue
         else:
             return _sockwrapper(s)
     else:
-        raise Exception("Failed to get a unique domain ID")
+        raise Exception('Failed to get a unique domain ID')

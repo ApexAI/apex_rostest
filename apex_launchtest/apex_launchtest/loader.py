@@ -32,7 +32,7 @@ def _make_loader(load_post_shutdown, injected_attributes, injected_args):
 
         def loadTestsFromTestCase(self, testCaseClass):
 
-            if getattr(testCaseClass, "__post_shutdown_test__", False) == load_post_shutdown:
+            if getattr(testCaseClass, '__post_shutdown_test__', False) == load_post_shutdown:
                 cases = super(_loader, self).loadTestsFromTestCase(testCaseClass)
 
                 # Inject test attributes into the test as self.whatever.  This method of giving

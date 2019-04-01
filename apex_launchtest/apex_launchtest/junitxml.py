@@ -16,7 +16,7 @@
 import xml.etree.ElementTree as ET
 
 
-def unittestResultsToXml(*, name="apex_launchtest", test_results={}):
+def unittestResultsToXml(*, name='apex_launchtest', test_results={}):
     """
     Serialize multiple unittest.TestResult objects into an XML document.
 
