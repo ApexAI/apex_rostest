@@ -17,6 +17,8 @@ import time
 import unittest
 import uuid
 
+from apex_launchtest.util import NoMatchingProcessException
+import apex_launchtest_ros
 import launch
 import launch_ros
 import launch_ros.actions
@@ -25,29 +27,26 @@ import rclpy.context
 import rclpy.executors
 import std_msgs.msg
 
-import apex_launchtest_ros
-from apex_launchtest.util import NoMatchingProcessException
-
 
 def generate_test_description(ready_fn):
     # Necessary to get real-time stdout from python processes:
     proc_env = os.environ.copy()
-    proc_env["PYTHONUNBUFFERED"] = "1"
+    proc_env['PYTHONUNBUFFERED'] = '1'
 
     # Normally, talker publishes on the 'chatter' topic and listener listens on the
     # 'chatter' topic, but we want to show how to use remappings to munge the data so we
     # will remap these topics when we launch the nodes and insert our own node that can
     # change the data as it passes through
     talker_node = launch_ros.actions.Node(
-        package="demo_nodes_py",
-        node_executable="talker",
+        package='demo_nodes_py',
+        node_executable='talker',
         env=proc_env,
-        remappings=[("chatter", "talker_chatter")],
+        remappings=[('chatter', 'talker_chatter')],
     )
 
     listener_node = launch_ros.actions.Node(
-        package="demo_nodes_py",
-        node_executable="listener",
+        package='demo_nodes_py',
+        node_executable='listener',
         env=proc_env,
     )
 
@@ -59,8 +58,8 @@ def generate_test_description(ready_fn):
             launch.actions.OpaqueFunction(function=lambda context: ready_fn()),
         ]),
         {
-            "talker": talker_node,
-            "listener": listener_node,
+            'talker': talker_node,
+            'listener': listener_node,
         }
     )
 
@@ -71,17 +70,17 @@ class TestTalkerListenerLink(unittest.TestCase):
     def setUpClass(cls, proc_output, listener):
         cls.context = rclpy.context.Context()
         rclpy.init(context=cls.context)
-        cls.node = rclpy.create_node("test_node", context=cls.context)
+        cls.node = rclpy.create_node('test_node', context=cls.context)
 
         # The demo node listener has no synchronization to indicate when it's ready to start
         # receiving messages on the /chatter topic.  This plumb_listener method will attempt
         # to publish for a few seconds until it sees output
         publisher = cls.node.create_publisher(
             std_msgs.msg.String,
-            "chatter"
+            'chatter'
         )
         msg = std_msgs.msg.String()
-        msg.data = "test message {}".format(uuid.uuid4())
+        msg.data = 'test message {}'.format(uuid.uuid4())
         for _ in range(5):
             try:
                 publisher.publish(msg)
@@ -97,7 +96,7 @@ class TestTalkerListenerLink(unittest.TestCase):
             else:
                 return
         else:
-            assert False, "Failed to plumb chatter topic to listener process"
+            assert False, 'Failed to plumb chatter topic to listener process'
 
     @classmethod
     def tearDownClass(cls):
@@ -116,7 +115,7 @@ class TestTalkerListenerLink(unittest.TestCase):
         msgs_rx = []
         sub = self.node.create_subscription(
             std_msgs.msg.String,
-            "talker_chatter",
+            'talker_chatter',
             callback=lambda msg: msgs_rx.append(msg)
         )
         self.addCleanup(self.node.destroy_subscription, sub)
@@ -140,7 +139,7 @@ class TestTalkerListenerLink(unittest.TestCase):
     def test_listener_receives(self, listener):
         pub = self.node.create_publisher(
             std_msgs.msg.String,
-            "chatter"
+            'chatter'
         )
         self.addCleanup(self.node.destroy_publisher, pub)
 
@@ -158,15 +157,15 @@ class TestTalkerListenerLink(unittest.TestCase):
 
     def test_fuzzy_data(self, listener):
         # This test shows how to insert a node in between the talker and the listener to
-        # change the data.  Here we're going to change "Hello World" to "Aloha World"
+        # change the data.  Here we're going to change 'Hello World' to 'Aloha World'
         def data_mangler(msg):
-            msg.data = msg.data.replace("Hello", "Aloha")
+            msg.data = msg.data.replace('Hello', 'Aloha')
             return msg
 
         republisher = apex_launchtest_ros.DataRepublisher(
             self.node,
-            "talker_chatter",
-            "chatter",
+            'talker_chatter',
+            'chatter',
             std_msgs.msg.String,
             data_mangler
         )
@@ -182,7 +181,7 @@ class TestTalkerListenerLink(unittest.TestCase):
         self.assertGreater(republisher.get_num_republished(), 2)
 
         # Sanity check that we're changing 'Hello World'
-        self.proc_output.assertWaitFor("Aloha World")
+        self.proc_output.assertWaitFor('Aloha World')
 
         # Check for the actual messages we sent
         for msg in republisher.get_republished():
