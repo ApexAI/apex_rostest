@@ -42,7 +42,7 @@ class TestUniqueness(unittest.TestCase):
         domain = apex_launchtest.domain_coordinator.get_coordinated_domain_id(
             selector=lambda: 42  # Force it to select '42' as the domain every time it tries
         )
-        self.assertEqual("42", str(domain))
+        self.assertEqual('42', str(domain))
 
         # Now that we've already got domain 42 reserved, this call should fail:
         with self.assertRaises(Exception) as cm:
@@ -50,7 +50,7 @@ class TestUniqueness(unittest.TestCase):
                 selector=lambda: 42
             )
 
-        self.assertIn("Failed to get a unique domain ID", str(cm.exception))
+        self.assertIn('Failed to get a unique domain ID', str(cm.exception))
 
     def test_known_order(self):
 
@@ -68,7 +68,7 @@ class TestUniqueness(unittest.TestCase):
         domains = [get_coordinated_domain_id(selector=sequence_gen()) for _ in range(10)]
 
         self.assertEqual(
-            ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+            ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
             [str(domain) for domain in domains]
         )
 

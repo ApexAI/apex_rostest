@@ -19,9 +19,8 @@ import unittest
 import xml.etree.ElementTree as ET
 
 import ament_index_python
-
-from apex_launchtest.test_result import FailResult
 from apex_launchtest.junitxml import unittestResultsToXml
+from apex_launchtest.test_result import FailResult
 
 
 class TestGoodXmlOutput(unittest.TestCase):
@@ -58,9 +57,9 @@ class TestGoodXmlOutput(unittest.TestCase):
 
         self.assertEqual(len(root.getchildren()), 2)
 
-        # Expecting an element called "active_tests" and "after_shutdown_tests"
+        # Expecting an element called 'active_tests' and 'after_shutdown_tests'
         child_names = [chld.attrib['name'] for chld in root.getchildren()]
-        self.assertEqual(set(child_names), set(['active_tests', 'after_shutdown_tests']))
+        self.assertEqual(set(child_names), {'active_tests', 'after_shutdown_tests'})
 
 
 class TestXmlFunctions(unittest.TestCase):
@@ -68,12 +67,12 @@ class TestXmlFunctions(unittest.TestCase):
 
     def test_fail_results_serialize(self):
         xml_tree = unittestResultsToXml(
-            name="fail_xml",
+            name='fail_xml',
             test_results={
-                "active_tests": FailResult()
+                'active_tests': FailResult()
             }
         )
 
         # Simple sanity check - see that there's a child element called active_tests
         child_names = [chld.attrib['name'] for chld in xml_tree.getroot().getchildren()]
-        self.assertEqual(set(child_names), set(['active_tests']))
+        self.assertEqual(set(child_names), {'active_tests'})

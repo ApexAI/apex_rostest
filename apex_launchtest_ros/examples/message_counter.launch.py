@@ -15,12 +15,10 @@
 import unittest
 import uuid
 
+from apex_launchtest import post_shutdown_test
 from launch import LaunchDescription
 from launch_ros.actions import Node
 import rclpy
-
-from apex_launchtest import post_shutdown_test
-
 import std_msgs.msg
 import test_msgs.srv
 
@@ -50,18 +48,18 @@ class ExampleTest(unittest.TestCase):
 
         msg_count_client = self.node.create_client(
             srv_type=test_msgs.srv.Primitives,
-            srv_name="/get_message_count",
+            srv_name='/get_message_count',
         )
 
         test_pub = self.node.create_publisher(
             msg_type=std_msgs.msg.String,
-            topic="msgs"
+            topic='msgs'
         )
 
         # See how many messages the message counter node has seen so far:
         self.assertTrue(
             msg_count_client.wait_for_service(timeout_sec=5.0),
-            "Timed out waiting for service"
+            'Timed out waiting for service'
         )
 
         def get_msg_count():
@@ -79,7 +77,7 @@ class ExampleTest(unittest.TestCase):
         time.sleep(1.0)  # message_counter lacks synchronizatoin
 
         final_msg_count = get_msg_count()
-        self.assertEquals(final_msg_count, initial_msg_count + 1)
+        self.assertEqual(final_msg_count, initial_msg_count + 1)
 
 
 @post_shutdown_test()
@@ -87,17 +85,17 @@ class PostShutdownTests(unittest.TestCase):
 
     def test_good_exit_code(self):
         for info in self.proc_info:
-            self.assertEquals(
+            self.assertEqual(
                 info.returncode,
                 0,
-                "Non-zero exit code for process {}".format(info.process_name)
+                'Non-zero exit code for process {}'.format(info.process_name)
             )
 
     def test_node_stdout(self):
-        # Check that we see "Count is 1" somewhere in stdout
+        # Check that we see 'Count is 1' somewhere in stdout
         self.assertTrue(
             any(
-                map(lambda x: b"Count is 1" in x.text, self.proc_output),
+                map(lambda x: b'Count is 1' in x.text, self.proc_output),
             )
         )
 

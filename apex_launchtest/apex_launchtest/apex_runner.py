@@ -17,8 +17,8 @@ import threading
 import unittest
 
 import launch
-from launch import LaunchService
 from launch import LaunchDescription
+from launch import LaunchService
 from launch.actions import RegisterEventHandler
 from launch.event_handlers import OnProcessExit
 from launch.event_handlers import OnProcessIO
@@ -71,7 +71,7 @@ class ApexRunner(object):
         # Instead, we'll let the tests run on another thread
         self._test_tr = threading.Thread(
             target=self._run_test,
-            name="test_runner_thread",
+            name='test_runner_thread',
             daemon=True
         )
 
@@ -126,7 +126,7 @@ class ApexRunner(object):
         if not self._tests_completed.wait(timeout=0):
             # LaunchService.run returned before the tests completed.  This can be because the user
             # did ctrl+c, or because all of the launched nodes died before the tests completed
-            print("Processes under test stopped before tests completed")
+            print('Processes under test stopped before tests completed')
             self._print_process_output_summary()  # <-- Helpful to debug why processes died early
             # We treat this as a test failure and return some test results indicating such
             return FailResult(), FailResult()
@@ -134,17 +134,17 @@ class ApexRunner(object):
         # Now, run the post-shutdown tests
         inactive_suite = PostShutdownTestLoader(
             injected_attributes={
-                "proc_info": self.proc_info,
-                "proc_output": self.proc_output._io_handler,
-                "test_args": self.test_args,
+                'proc_info': self.proc_info,
+                'proc_output': self.proc_output._io_handler,
+                'test_args': self.test_args,
             },
             injected_args=dict(
                 self.test_context,
                 # Add a few more things to the args dictionary:
                 **{
-                    "proc_info": self.proc_info,
-                    "proc_output": self.proc_output._io_handler,
-                    "test_args": self.test_args
+                    'proc_info': self.proc_info,
+                    'proc_output': self.proc_output._io_handler,
+                    'test_args': self.test_args
                 }
             )
         ).loadTestsFromModule(self._test_module)
@@ -167,7 +167,7 @@ class ApexRunner(object):
 
         if not self._processes_launched.wait(timeout=15):
             # Timed out waiting for the processes to start
-            print("Timed out waiting for processes to start up")
+            print('Timed out waiting for processes to start up')
             self._launch_service.shutdown()
             return
 
@@ -175,17 +175,17 @@ class ApexRunner(object):
             # Load the tests
             active_suite = PreShutdownTestLoader(
                 injected_attributes={
-                    "proc_info": self.proc_info,
-                    "proc_output": self.proc_output,
-                    "test_args": self.test_args,
+                    'proc_info': self.proc_info,
+                    'proc_output': self.proc_output,
+                    'test_args': self.test_args,
                 },
                 injected_args=dict(
                     self.test_context,
                     # Add a few more things to the args dictionary:
                     **{
-                        "proc_info": self.proc_info,
-                        "proc_output": self.proc_output,
-                        "test_args": self.test_args
+                        'proc_info': self.proc_info,
+                        'proc_output': self.proc_output,
+                        'test_args': self.test_args
                     }
                 )
             ).loadTestsFromModule(self._test_module)
@@ -208,7 +208,7 @@ class ApexRunner(object):
             print("##### '{}' output #####".format(process.process_name))
             try:
                 for io in self.proc_output[process.action]:
-                    print("{}".format(io.text.decode('ascii')))
+                    print('{}'.format(io.text.decode('ascii')))
             except KeyError:
                 pass  # Process generated no output
-            print("#" * (len(process.process_name) + 21))
+            print('#' * (len(process.process_name) + 21))
