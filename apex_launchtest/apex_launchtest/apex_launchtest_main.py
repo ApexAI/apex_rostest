@@ -21,6 +21,7 @@ import sys
 from .apex_runner import ApexRunner
 from .domain_coordinator import get_coordinated_domain_id
 from .junitxml import unittestResultsToXml
+from .loader import LoadTestsFromPythonModule
 from .print_arguments import print_arguments_of_launch_description
 
 _logger_ = logging.getLogger(__name__)
@@ -99,12 +100,13 @@ def apex_launchtest_main():
             "Test file '{}' is missing generate_test_description function".format(args.test_file)
         )
 
-    dut_test_description_func = test_module.generate_test_description
-    _logger_.debug('Checking generate_test_description function signature')
+    # This is a list of TestRun objects.  Each run corresponds to one launch.  There may be
+    # multiple runs if the launch is parametrized
+    test_runs = LoadTestsFromPythonModule(test_module)
 
+    # The runner handles sequcing the launches
     runner = ApexRunner(
-        gen_launch_description_fn=dut_test_description_func,
-        test_module=test_module,
+        test_runs=test_runs,
         launch_file_arguments=args.launch_arguments,
         debug=args.verbose
     )
@@ -116,8 +118,9 @@ def apex_launchtest_main():
         parser.error(e)
 
     if args.show_args:
+        # TODO pete: Handle the case where different launch descriptions take different args?
         print_arguments_of_launch_description(
-            launch_description=runner.get_launch_description()
+            launch_description=test_runs[0].get_launch_description()
         )
         sys.exit(0)
 

@@ -17,6 +17,8 @@ import os
 
 import ament_index_python
 from apex_launchtest.apex_runner import ApexRunner
+from apex_launchtest.loader import LoadTestsFromPythonModule
+from apex_launchtest.loader import TestRun as TR
 import launch
 import launch.actions
 
@@ -42,10 +44,9 @@ def test_dut_that_shuts_down(capsys):
             launch.actions.OpaqueFunction(function=lambda context: ready_fn()),
         ])
 
-    with mock.patch('apex_launchtest.apex_runner.ApexRunner._run_test'):
+    with mock.patch('apex_launchtest.apex_runner._RunnerWorker._run_test'):
         runner = ApexRunner(
-            gen_launch_description_fn=generate_test_description,
-            test_module=None
+            [TR(generate_test_description, [], [])]
         )
 
         pre_result, post_result = runner.run()
@@ -90,10 +91,9 @@ def test_dut_that_has_exception(capsys):
             launch.actions.OpaqueFunction(function=lambda context: ready_fn()),
         ])
 
-    with mock.patch('apex_launchtest.apex_runner.ApexRunner._run_test'):
+    with mock.patch('apex_launchtest.apex_runner._RunnerWorker._run_test'):
         runner = ApexRunner(
-            gen_launch_description_fn=generate_test_description,
-            test_module=None
+            [TR(generate_test_description, [], [])]
         )
 
         pre_result, post_result = runner.run()
@@ -145,9 +145,10 @@ class PostTest(unittest.TestCase):
             launch.actions.OpaqueFunction(function=lambda context: ready_fn()),
         ])
 
+    module.generate_test_description = generate_test_description
+
     runner = ApexRunner(
-        gen_launch_description_fn=generate_test_description,
-        test_module=module
+        LoadTestsFromPythonModule(module)
     )
 
     pre_result, post_result = runner.run()
