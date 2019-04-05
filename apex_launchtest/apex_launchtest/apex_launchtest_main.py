@@ -126,23 +126,17 @@ def apex_launchtest_main():
 
     _logger_.debug('Running integration test')
     try:
-        result, postcheck_result = runner.run()
+        results = runner.run()
         _logger_.debug('Done running integration test')
 
         if args.xmlpath:
-            xml_report = unittestResultsToXml(
-                test_results={
-                    'active_tests': result,
-                    'after_shutdown_tests': postcheck_result
-                }
-            )
+            xml_report = unittestResultsToXml(test_results=results)
             xml_report.write(args.xmlpath, xml_declaration=True)
 
-        if not result.wasSuccessful():
-            sys.exit(1)
-
-        if not postcheck_result.wasSuccessful():
-            sys.exit(1)
+        # There will be one result for every test run (see above where we load the tests)
+        for result in results.values():
+            if not result.wasSuccessful():
+                sys.exit(1)
 
     except Exception as e:
         import traceback

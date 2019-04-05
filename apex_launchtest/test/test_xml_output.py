@@ -55,11 +55,17 @@ class TestGoodXmlOutput(unittest.TestCase):
         tree = ET.parse(self.xml_file)
         root = tree.getroot()
 
-        self.assertEqual(len(root.getchildren()), 2)
+        self.assertEqual(len(root.getchildren()), 1)
+        test_suite = root.getchildren()[0]
 
-        # Expecting an element called 'active_tests' and 'after_shutdown_tests'
-        child_names = [chld.attrib['name'] for chld in root.getchildren()]
-        self.assertEqual(set(child_names), {'active_tests', 'after_shutdown_tests'})
+        # Expecting an element called 'launch' since this was not parametrized
+        self.assertEqual(test_suite.attrib['name'], 'launch')
+
+        # Drilling down a little further, we expect the class names to show up in the testcase
+        # names
+        case_names = [case.attrib['name'] for case in test_suite.getchildren()]
+        self.assertIn('TestGoodProcess.test_count_to_four', case_names)
+        self.assertIn('TestProcessOutput.test_full_output', case_names)
 
 
 class TestXmlFunctions(unittest.TestCase):

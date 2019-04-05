@@ -33,9 +33,17 @@ def _normalize_ld(launch_description_fn):
 
 class TestRun:
 
-    def __init__(self, test_description_function, pre_shutdown_tests, post_shutdown_tests):
+    def __init__(self,
+                 test_description_function,
+                 param_args,
+                 pre_shutdown_tests,
+                 post_shutdown_tests):
+
         self.test_description_function = test_description_function
         self.normalized_test_description = _normalize_ld(test_description_function)
+
+        self.param_args = param_args
+
         self.pre_shutdown_tests = pre_shutdown_tests
         self.post_shutdown_tests = post_shutdown_tests
 
@@ -68,20 +76,27 @@ class TestRun:
         """
         return self.test_description_function(lambda: None)
 
+    def __str__(self):
+        if not self.param_args:
+            return 'launch'
+        else:
+            return 'TODO Parametrize'
+
 
 def LoadTestsFromPythonModule(module):
 
     if hasattr(module.generate_test_description, '__parametrized__'):
         normalized_test_description_func = module.generate_test_description
     else:
-        normalized_test_description_func = [module.generate_test_description]
+        normalized_test_description_func = [(module.generate_test_description, {})]
 
     # If our test description is parameterized, we'll load a set of tests for each
     # individual launch
     return [TestRun(description,
+                    args,
                     PreShutdownTestLoader().loadTestsFromModule(module),
                     PostShutdownTestLoader().loadTestsFromModule(module))
-            for description in normalized_test_description_func]
+            for description, args in normalized_test_description_func]
 
 
 def PreShutdownTestLoader():

@@ -46,13 +46,13 @@ def test_dut_that_shuts_down(capsys):
 
     with mock.patch('apex_launchtest.apex_runner._RunnerWorker._run_test'):
         runner = ApexRunner(
-            [TR(generate_test_description, [], [])]
+            [TR(generate_test_description, {}, [], [])]
         )
 
-        pre_result, post_result = runner.run()
+        results = runner.run()
 
-        assert not pre_result.wasSuccessful()
-        assert not post_result.wasSuccessful()
+        for result in results.values():
+            assert not result.wasSuccessful()
 
     # This is the negative version of the test below.  If no exit code, no extra output
     # is generated
@@ -93,13 +93,13 @@ def test_dut_that_has_exception(capsys):
 
     with mock.patch('apex_launchtest.apex_runner._RunnerWorker._run_test'):
         runner = ApexRunner(
-            [TR(generate_test_description, [], [])]
+            [TR(generate_test_description, {}, [], [])]
         )
 
-        pre_result, post_result = runner.run()
+        results = runner.run()
 
-        assert not pre_result.wasSuccessful()
-        assert not post_result.wasSuccessful()
+        for result in results.values():
+            assert not result.wasSuccessful()
 
     # Make sure some information about WHY the process died shows up in the output
     out, err = capsys.readouterr()
@@ -151,8 +151,7 @@ class PostTest(unittest.TestCase):
         LoadTestsFromPythonModule(module)
     )
 
-    pre_result, post_result = runner.run()
+    results = runner.run()
 
-    assert pre_result.wasSuccessful()
-
-    assert pre_result.wasSuccessful()
+    for result in results.values():
+        assert result.wasSuccessful()

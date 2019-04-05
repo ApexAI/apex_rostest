@@ -44,8 +44,10 @@ def parametrize(argnames, argvalues):
             for val in argvalues:
                 partial_args = dict(zip(argnames, val))
 
+                partial = functools.partial(func, **partial_args)
+                functools.update_wrapper(partial, func)
                 self.__calls.append(
-                    functools.partial(func, **partial_args)
+                    (partial, partial_args)
                 )
 
         def __iter__(self):

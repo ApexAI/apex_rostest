@@ -29,6 +29,10 @@ from .proc_info_handler import ActiveProcInfoHandler
 from .test_result import FailResult, TestResult
 
 
+class _LaunchDiedException(Exception):
+    pass
+
+
 class _RunnerWorker():
 
     def __init__(self,
@@ -64,16 +68,17 @@ class _RunnerWorker():
         active, and another set for tests that ran after processes were shutdown
         """
         test_ld, test_context = self._test_run.normalized_test_description(
-            lambda: self._processes_launched.set()
+            ready_fn=lambda: self._processes_launched.set()
         )
 
         # Data that needs to be bound to the tests:
         proc_info = ActiveProcInfoHandler()
         proc_output = ActiveIoHandler()
-        test_context = test_context
+        full_context = dict(test_context, **self._test_run.param_args)
         # TODO pete: this can be simplified as a call to the dict ctor:
         parsed_launch_arguments = parse_launch_arguments(self._launch_file_arguments)
         test_args = {}
+
         for k, v in parsed_launch_arguments:
             test_args[k] = v
 
@@ -85,7 +90,7 @@ class _RunnerWorker():
                 'test_args': test_args,
             },
             injected_args=dict(
-                test_context,
+                full_context,
                 # Add a few more things to the args dictionary:
                 **{
                     'proc_info': proc_info,
@@ -102,7 +107,7 @@ class _RunnerWorker():
                 'test_args': test_args,
             },
             injected_args=dict(
-                test_context,
+                full_context,
                 # Add a few more things to the args dictionary:
                 **{
                     'proc_info': proc_info._proc_info_handler,
@@ -144,14 +149,16 @@ class _RunnerWorker():
             # Give some extra help debugging why processes died early
             self._print_process_output_summary(proc_info, proc_output)
             # We treat this as a test failure and return some test results indicating such
-            return FailResult(), FailResult()
+            raise _LaunchDiedException()
 
         inactive_results = unittest.TextTestRunner(
             verbosity=2,
             resultclass=TestResult
         ).run(self._test_run.post_shutdown_tests)
 
-        return self._results, inactive_results
+        self._results.append(inactive_results)
+
+        return self._results
 
     def _run_test(self):
         # Waits for the DUT processes to start (signaled by the _processes_launched
@@ -213,14 +220,25 @@ class ApexRunner(object):
         :return: A tuple of two unittest.Results - one for tests that ran while processes were
         active, and another set for tests that ran after processes were shutdown
         """
-        for run in self._test_runs:
-            worker = _RunnerWorker(run, self._launch_file_arguments, self._debug)
-            # TODO pete: Make this work for parameterized launches by combining the results
-            return worker.run()
+        # We will return the results as a {test_run: (active_results, post_shutdown_results)}
+        results = {}
+
+        for index, run in enumerate(self._test_runs):
+            if len(self._test_runs) > 1:
+                print('Starting test run {}'.format(index + 1))
+            try:
+                worker = _RunnerWorker(run, self._launch_file_arguments, self._debug)
+                results[run] = worker.run()
+            except _LaunchDiedException:
+                # The most likely cause was ctrl+c, so we'll abort the test run
+                results[run] = FailResult()
+                break
+
+        return results
 
     def validate(self):
         """Inspect the test configuration for configuration errors."""
         # Make sure the function signature of the launch configuration
         # generator is correct
         for run in self._test_runs:
-            inspect.getcallargs(run.test_description_function, lambda: None)
+            inspect.getcallargs(run.test_description_function, ready_fn=lambda: None)

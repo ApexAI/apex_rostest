@@ -25,6 +25,7 @@ class TestApexRunnerValidation(unittest.TestCase):
         dut = ApexRunner(
             [TR(
                 test_description_function=lambda: None,
+                param_args={},
                 pre_shutdown_tests=None,
                 post_shutdown_tests=None,
             )]
@@ -36,6 +37,7 @@ class TestApexRunnerValidation(unittest.TestCase):
         dut = ApexRunner(
             [TR(
                 test_description_function=lambda ready_fn: None,
+                param_args={},
                 pre_shutdown_tests=None,
                 post_shutdown_tests=None,
             )]
