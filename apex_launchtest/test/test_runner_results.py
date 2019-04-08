@@ -14,11 +14,15 @@
 
 import imp
 import os
+import types
+import unittest
 
 import ament_index_python
+import apex_launchtest
 from apex_launchtest.apex_runner import ApexRunner
 from apex_launchtest.loader import LoadTestsFromPythonModule
 from apex_launchtest.loader import TestRun as TR
+
 import launch
 import launch.actions
 
@@ -155,3 +159,58 @@ class PostTest(unittest.TestCase):
 
     for result in results.values():
         assert result.wasSuccessful()
+
+
+def test_parametrized_run_with_one_failure():
+
+    # Test Data
+    @apex_launchtest.parametrize('arg_val', [1, 2, 3, 4, 5])
+    def generate_test_description(arg_val, ready_fn):
+        TEST_PROC_PATH = os.path.join(
+            ament_index_python.get_package_prefix('apex_launchtest'),
+            'lib/apex_launchtest',
+            'good_proc'
+        )
+
+        # This is necessary to get unbuffered output from the process under test
+        proc_env = os.environ.copy()
+        proc_env['PYTHONUNBUFFERED'] = '1'
+
+        return launch.LaunchDescription([
+            launch.actions.ExecuteProcess(
+                cmd=[TEST_PROC_PATH],
+                env=proc_env,
+            ),
+            launch.actions.OpaqueFunction(function=lambda context: ready_fn())
+        ])
+
+    class FakePreShutdownTests(unittest.TestCase):
+
+        def test_fail_on_two(self, proc_output, arg_val):
+            proc_output.assertWaitFor('Starting Up')
+            assert arg_val != 2
+
+    @apex_launchtest.post_shutdown_test()
+    class FakePostShutdownTests(unittest.TestCase):
+
+        def test_fail_on_three(self, arg_val):
+            assert arg_val != 3
+
+    # Set up a fake module containing the test data:
+    test_module = types.ModuleType('test_module')
+    test_module.generate_test_description = generate_test_description
+    test_module.FakePreShutdownTests = FakePreShutdownTests
+    test_module.FakePostShutdownTests = FakePostShutdownTests
+
+    # Run the test:
+    runner = ApexRunner(
+        LoadTestsFromPythonModule(test_module)
+    )
+
+    results = runner.run()
+
+    passes = [result for result in results.values() if result.wasSuccessful()]
+    fails = [result for result in results.values() if not result.wasSuccessful()]
+
+    assert len(passes) == 3  # 1, 4, and 5 should pass
+    assert len(fails) == 2  # 2 fails in an active test, 3 fails in a post-shutdown test

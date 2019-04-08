@@ -21,6 +21,7 @@ import xml.etree.ElementTree as ET
 import ament_index_python
 from apex_launchtest.junitxml import unittestResultsToXml
 from apex_launchtest.test_result import FailResult
+from apex_launchtest.test_result import TestResult as TR
 
 
 class TestGoodXmlOutput(unittest.TestCase):
@@ -82,3 +83,16 @@ class TestXmlFunctions(unittest.TestCase):
         # Simple sanity check - see that there's a child element called active_tests
         child_names = [chld.attrib['name'] for chld in xml_tree.getroot().getchildren()]
         self.assertEqual(set(child_names), {'active_tests'})
+
+    def test_multiple_test_results(self):
+        xml_tree = unittestResultsToXml(
+            name='multiple_launches',
+            test_results={
+                'launch_1': TR(None, True, 1),
+                'launch_2': TR(None, True, 1),
+                'launch_3': TR(None, True, 1),
+            }
+        )
+
+        child_names = [chld.attrib['name'] for chld in xml_tree.getroot().getchildren()]
+        self.assertEqual(set(child_names), {'launch_1', 'launch_2', 'launch_3'})
