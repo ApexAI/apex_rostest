@@ -17,6 +17,7 @@ import unittest
 
 import ament_index_python
 import apex_launchtest
+import apex_launchtest.asserts
 import apex_launchtest.util
 import launch
 import launch.actions
@@ -52,5 +53,15 @@ class TestProcessOutput(unittest.TestCase):
 
     # Note that 'arg_param' is automatically given to the test case, even though it was not
     # part of the test context.
-    def test_process_outputs_expectd_value(self, proc_output, arg_param):
+    def test_process_outputs_expected_value(self, proc_output, arg_param):
         proc_output.assertWaitFor('--' + arg_param, timeout=10)
+
+
+@apex_launchtest.post_shutdown_test()
+class TestOutputAfterShutdown(unittest.TestCase):
+
+    def test_process_output_expected_value(self, proc_output, arg_param, dut_process):
+        with apex_launchtest.asserts.assertSequentialStdout(proc_output, dut_process) as cm:
+            cm.assertInStdout('Starting Up')
+            cm.assertInStdout('--' + arg_param)
+            cm.assertInStdout('Shutting Down')
