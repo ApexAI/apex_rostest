@@ -14,6 +14,7 @@
 
 import functools
 import inspect
+import itertools
 import unittest
 
 
@@ -47,6 +48,16 @@ class TestRun:
         self.pre_shutdown_tests = pre_shutdown_tests
         self.post_shutdown_tests = post_shutdown_tests
 
+        # If we're parametrized, extend the test names so we can tell more easily what
+        # params they were run with
+        if self.param_args:
+            for tc in itertools.chain(_iterate_tests_in_test_suite(pre_shutdown_tests),
+                                      _iterate_tests_in_test_suite(post_shutdown_tests)):
+                test_method = getattr(tc, tc._testMethodName)
+                new_name = tc._testMethodName + self._format_params()
+                setattr(tc, '_testMethodName', new_name)
+                setattr(tc, new_name, test_method)
+
     def bind(self, tests, injected_attributes={}, injected_args={}):
         """
         Bind injected_attributes and injected_args to tests.
@@ -77,10 +88,20 @@ class TestRun:
         return self.test_description_function(lambda: None)
 
     def __str__(self):
+        """
+        Get the human-readable name of a test run.
+
+        We'll use the module name (set to the file name in apex_launchtest_main when we loaded it)
+        plus some extra disambiguating info for parametrized tests
+        """
+        return self.test_description_function.__module__ + self._format_params()
+
+    def _format_params(self):
         if not self.param_args:
-            return 'launch'
+            return ''
         else:
-            return 'TODO Parametrize'
+            str_args = map(str, self.param_args.values())
+            return '[{}]'.format(', '.join(str_args))
 
 
 def LoadTestsFromPythonModule(module):

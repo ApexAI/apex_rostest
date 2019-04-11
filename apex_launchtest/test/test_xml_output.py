@@ -59,8 +59,8 @@ class TestGoodXmlOutput(unittest.TestCase):
         self.assertEqual(len(root.getchildren()), 1)
         test_suite = root.getchildren()[0]
 
-        # Expecting an element called 'launch' since this was not parametrized
-        self.assertEqual(test_suite.attrib['name'], 'launch')
+        # Expecting an element called 'good_proc.test.py' since this was not parametrized
+        self.assertEqual(test_suite.attrib['name'], 'good_proc.test.py')
 
         # Drilling down a little further, we expect the class names to show up in the testcase
         # names

@@ -30,7 +30,10 @@ _logger_ = logging.getLogger(__name__)
 def _load_python_file_as_module(python_file_path):
     """Load a given Python launch file (by path) as a Python module."""
     # Taken from apex_core to not introduce a weird dependency thing
-    loader = SourceFileLoader('python_launch_file', python_file_path)
+    loader = SourceFileLoader(
+        os.path.basename(python_file_path),
+        python_file_path
+    )
     return loader.load_module()
 
 
