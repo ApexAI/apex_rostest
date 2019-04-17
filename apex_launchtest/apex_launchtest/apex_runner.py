@@ -231,6 +231,7 @@ class ApexRunner(object):
             except unittest.case.SkipTest as skip_exception:
                 # If a 'skip' decorator was placed on the generate_launch_description function,
                 # we skip all the tests for that run
+                print('{} is skipped: {}'.format(run, skip_exception))
                 results[run] = SkipResult(msg=str(skip_exception))
                 continue
             except _LaunchDiedException:
