@@ -26,7 +26,7 @@ from launch.event_handlers import OnProcessIO
 from .io_handler import ActiveIoHandler
 from .parse_arguments import parse_launch_arguments
 from .proc_info_handler import ActiveProcInfoHandler
-from .test_result import FailResult, TestResult
+from .test_result import FailResult, SkipResult, TestResult
 
 
 class _LaunchDiedException(Exception):
@@ -228,6 +228,11 @@ class ApexRunner(object):
             try:
                 worker = _RunnerWorker(run, self._launch_file_arguments, self._debug)
                 results[run] = worker.run()
+            except unittest.case.SkipTest as skip_exception:
+                # If a 'skip' decorator was placed on the generate_launch_description function,
+                # we skip all the tests for that run
+                results[run] = SkipResult(msg=str(skip_exception))
+                continue
             except _LaunchDiedException:
                 # The most likely cause was ctrl+c, so we'll abort the test run
                 results[run] = FailResult()

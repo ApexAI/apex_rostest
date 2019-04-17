@@ -21,6 +21,7 @@ import xml.etree.ElementTree as ET
 import ament_index_python
 from apex_launchtest.junitxml import unittestResultsToXml
 from apex_launchtest.test_result import FailResult
+from apex_launchtest.test_result import SkipResult
 from apex_launchtest.test_result import TestResult as TR
 
 
@@ -101,6 +102,23 @@ class TestXmlFunctions(unittest.TestCase):
         # Simple sanity check - see that there's a child element called active_tests
         child_names = [chld.attrib['name'] for chld in xml_tree.getroot().getchildren()]
         self.assertEqual(set(child_names), {'active_tests'})
+
+    def test_skip_results_serialize(self):
+        xml_tree = unittestResultsToXml(
+            name='skip_xml',
+            test_results={
+                'active_tests': SkipResult(msg='skip message')
+            }
+        )
+
+        # Make sure the message got into the 'skip' element
+        testsuites_element = xml_tree.getroot()
+        testsuite_element = testsuites_element.find('testsuite')
+        testcase_element = testsuite_element.find('testcase')
+        skip_element = testcase_element.find('skipped')
+
+        self.assertEqual('1', testsuite_element.attrib['skipped'])
+        self.assertEqual('skip message', skip_element.attrib['message'])
 
     def test_multiple_test_results(self):
         xml_tree = unittestResultsToXml(
