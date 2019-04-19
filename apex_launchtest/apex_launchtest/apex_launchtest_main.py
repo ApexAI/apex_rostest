@@ -21,6 +21,7 @@ import sys
 from .apex_runner import ApexRunner
 from .domain_coordinator import get_coordinated_domain_id
 from .junitxml import unittestResultsToXml
+from .loader import LoadTestsFromPythonModule
 from .print_arguments import print_arguments_of_launch_description
 
 _logger_ = logging.getLogger(__name__)
@@ -29,7 +30,10 @@ _logger_ = logging.getLogger(__name__)
 def _load_python_file_as_module(python_file_path):
     """Load a given Python launch file (by path) as a Python module."""
     # Taken from apex_core to not introduce a weird dependency thing
-    loader = SourceFileLoader('python_launch_file', python_file_path)
+    loader = SourceFileLoader(
+        os.path.basename(python_file_path),
+        python_file_path
+    )
     return loader.load_module()
 
 
@@ -99,12 +103,13 @@ def apex_launchtest_main():
             "Test file '{}' is missing generate_test_description function".format(args.test_file)
         )
 
-    dut_test_description_func = test_module.generate_test_description
-    _logger_.debug('Checking generate_test_description function signature')
+    # This is a list of TestRun objects.  Each run corresponds to one launch.  There may be
+    # multiple runs if the launch is parametrized
+    test_runs = LoadTestsFromPythonModule(test_module)
 
+    # The runner handles sequcing the launches
     runner = ApexRunner(
-        gen_launch_description_fn=dut_test_description_func,
-        test_module=test_module,
+        test_runs=test_runs,
         launch_file_arguments=args.launch_arguments,
         debug=args.verbose
     )
@@ -116,30 +121,25 @@ def apex_launchtest_main():
         parser.error(e)
 
     if args.show_args:
+        # TODO pete: Handle the case where different launch descriptions take different args?
         print_arguments_of_launch_description(
-            launch_description=runner.get_launch_description()
+            launch_description=test_runs[0].get_launch_description()
         )
         sys.exit(0)
 
     _logger_.debug('Running integration test')
     try:
-        result, postcheck_result = runner.run()
+        results = runner.run()
         _logger_.debug('Done running integration test')
 
         if args.xmlpath:
-            xml_report = unittestResultsToXml(
-                test_results={
-                    'active_tests': result,
-                    'after_shutdown_tests': postcheck_result
-                }
-            )
+            xml_report = unittestResultsToXml(test_results=results)
             xml_report.write(args.xmlpath, xml_declaration=True)
 
-        if not result.wasSuccessful():
-            sys.exit(1)
-
-        if not postcheck_result.wasSuccessful():
-            sys.exit(1)
+        # There will be one result for every test run (see above where we load the tests)
+        for result in results.values():
+            if not result.wasSuccessful():
+                sys.exit(1)
 
     except Exception as e:
         import traceback
