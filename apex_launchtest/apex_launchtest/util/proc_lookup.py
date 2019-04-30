@@ -68,7 +68,7 @@ def _str_name_to_process(info_obj, proc_name, cmd_args):
         elif cmd_args is NO_CMD_ARGS:
             return len(proc.process_details['cmd']) == 1
         else:
-            return cmd_args in proc.process_details['cmd'][1:]
+            return all(arg in proc.process_details['cmd'][1:] for arg in cmd_args)
 
     matches = [proc for proc in info_obj.processes()
                if name_match_fn(proc) and cmd_match_fn(proc)]
@@ -89,7 +89,7 @@ def resolveProcesses(info_obj, *, process=None, cmd_args=None, strict_proc_match
     :param cmd_args: Optional.  If the process param is a string, the cmd_args will be used to
     disambiguate processes with the same name.  cmd_args=None will match all command arguments.
     cmd_args=apex_launchtest.asserts.NO_CMD_ARGS will match a process without command-line
-    arguments
+    arguments.  Otherwise, give arguments as an array of strings
 
     :param strict_proc_matching:  Optional.  If the process param is a string and matches multiple
     processes, strict_proc_matching=True will raise an error
@@ -97,6 +97,12 @@ def resolveProcesses(info_obj, *, process=None, cmd_args=None, strict_proc_match
     :returns: A list of one or more matching processes taken from the info_obj.  If no processes
     in info_obj match, a NoMatchingProcessException will be raised.
     """
+    # Old versions of this let you pass a string for cmd_args, but there was no way to search
+    # for multiple arguments when you did that.  For backwards compatibility, we'll wrap string
+    # cmd_args in a list
+    if isinstance(cmd_args, str):
+        cmd_args = [cmd_args]
+
     if process is None:
         # We want to search all processes
         all_procs = info_obj.processes()
