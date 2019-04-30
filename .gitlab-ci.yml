@@ -80,7 +80,9 @@ build_all:
       - build
       - install
 
-build_all_crystal:
+# We need some bug fixes in launch that are newer than crystal, or else the tests hang.
+# disabling the crystal build.  We're re-enable this for Dashing once it's out
+.build_all_crystal:
   <<: *bin_job_template
   image: osrf/ros:crystal-desktop
   stage: build
@@ -144,7 +146,8 @@ test_all:
       - log
       - "*/.coverage"
 
-test_all_crystal:
+# Same as above - we need bug fixes newer than crystal - re-enable for Dashing once it's out
+.test_all_crystal:
   <<: *bin_job_template
   image: osrf/ros:crystal-desktop
   stage: test
