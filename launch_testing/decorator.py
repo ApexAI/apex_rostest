@@ -12,26 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from . import tools
-from .decorator import post_shutdown_test
-from .io_handler import ActiveIoHandler, IoHandler
-from .parametrize import parametrize
-from .proc_info_handler import ActiveProcInfoHandler, ProcInfoHandler
-from .ready_aggregator import ReadyAggregator
 
+def post_shutdown_test():
+    """Decorate tests that are meant to run after process shutdown."""
+    def decorator(test_item):
+        if not isinstance(test_item, type):
+            raise TypeError('postcondition_test should decorate test classes')
+        test_item.__post_shutdown_test__ = True
+        return test_item
 
-__all__ = [
-    # Modules
-    'tools',
-
-    # Functions
-    'parametrize',
-    'post_shutdown_test',
-
-    # Classes
-    'ActiveIoHandler',
-    'ActiveProcInfoHandler',
-    'IoHandler',
-    'ProcInfoHandler',
-    'ReadyAggregator',
-]
+    return decorator

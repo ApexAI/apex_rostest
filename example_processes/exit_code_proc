@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Copyright 2019 Apex.AI, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,26 +14,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from . import tools
-from .decorator import post_shutdown_test
-from .io_handler import ActiveIoHandler, IoHandler
-from .parametrize import parametrize
-from .proc_info_handler import ActiveProcInfoHandler, ProcInfoHandler
-from .ready_aggregator import ReadyAggregator
+import sys
+import time
 
 
-__all__ = [
-    # Modules
-    'tools',
+# This process pretends to do some simple setup, then pretends to do some simple work,
+# then shuts itself down automatically
+if __name__ == "__main__":
 
-    # Functions
-    'parametrize',
-    'post_shutdown_test',
+    if "--silent" in sys.argv[1:]:
+        sys.exit(1)
 
-    # Classes
-    'ActiveIoHandler',
-    'ActiveProcInfoHandler',
-    'IoHandler',
-    'ProcInfoHandler',
-    'ReadyAggregator',
-]
+    if '--exception' in sys.argv[1:]:
+        raise Exception("Process had a pretend error")
+
+    print("Exiting with a code")
+    sys.exit(1) 
