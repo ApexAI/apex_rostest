@@ -64,7 +64,7 @@ build_launchtest:
   <<: *bin_job_template
   stage: build
   script:
-    - colcon build --packages-up-to apex_launchtest apex_launchtest_cmake
+    - colcon build --packages-up-to launch_testing
   artifacts:
     paths:
       - build
@@ -101,14 +101,14 @@ build_isolated:
     - schedules
   script:
     - env  # For debugging
-    # Make sure we can build and test apex_launchtest
-    - colcon list --topological-graph --packages-up-to apex_launchtest
-    - colcon list --topological-graph --packages-up-to apex_launchtest | grep "rclpy" &> /dev/null && exit 1  # Fail if apex_launchtest depends on rclpy
-    - colcon build --packages-up-to apex_launchtest
+    # Make sure we can build and test launch_testing
+    - colcon list --topological-graph --packages-up-to launch_testing
+    - colcon list --topological-graph --packages-up-to launch_testing | grep "rclpy" &> /dev/null && exit 1  # Fail if launch_testing depends on rclpy
+    - colcon build --packages-up-to launch_testing
     - tar -cf launchtest_artifacts.tar build install
     # Make sure we can also build and test apex_launchtest_ros
-    - colcon list --topological-graph --packages-up-to apex_launchtest_ros
-    - colcon build --packages-up-to apex_launchtest_ros
+    - colcon list --topological-graph --packages-up-to launch_testing_ros
+    - colcon build --packages-up-to launch_testing_ros
     - tar -cf launchtest_ros_artifacts.tar build install
   artifacts:
     paths:
@@ -122,7 +122,7 @@ test_launchtest:
     - build_launchtest
   script:
     - pip3 install mock
-    - colcon test --packages-select apex_launchtest apex_launchtest_cmake
+    - colcon test --packages-select launch_testing
     - colcon test-result --verbose
   artifacts:
     when: always
@@ -173,10 +173,10 @@ test_isolated:
     - env  # For debugging
     - pip3 install mock
     - tar xf launchtest_artifacts.tar -C .
-    - colcon test --packages-select apex_launchtest --pytest-args "-k not (test_flake8 or test_pep257)"
+    - colcon test --packages-select launch_testing --pytest-args "-k not (test_flake8 or test_pep257)"
     - colcon test-result --all --verbose
     - tar xf launchtest_ros_artifacts.tar -C .
-    - colcon test --packages-select apex_launchtest_ros --pytest-args "-k not (test_flake8 or test_pep257)"
+    - colcon test --packages-select launch_testing_ros --pytest-args "-k not (test_flake8 or test_pep257)"
     - colcon test-result --all --verbose
   artifacts:
     when: always
