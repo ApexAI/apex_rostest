@@ -177,6 +177,6 @@ class TestIoHandlerAndAssertions(unittest.TestCase):
     def test_works_with_regex(self):
         assertInStdout(
             self.proc_output,
-            re.compile(r"Called with arguments \S+"),
-            "terminating_proc-2"
+            re.compile(r'Called with arguments \S+'),
+            'terminating_proc-2'
         )

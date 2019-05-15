@@ -12,8 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import sys
 import unittest
 
+import ament_index_python
+
+import launch
+from launch.actions import RegisterEventHandler
+from launch.event_handlers import OnProcessIO
+from launch_testing import ActiveIoHandler
+from launch_testing.asserts import assertSequentialStdout
 from launch_testing.asserts import SequentialTextChecker
 
 
@@ -41,6 +50,15 @@ class TestAssertSequentialStdout(unittest.TestCase):
         with self.assertRaises(AssertionError):
             # This should assert because we've already moved past 'output 10'
             self.dut.assertInStdout(self.to_check[0])
+
+    def test_method_alias(self):
+        # assertInText should do the same thing as assertInStdout
+        for output in self.to_check:
+            self.dut.assertInText(output)
+
+        with self.assertRaises(AssertionError):
+            # This should assert because we've already moved past 'output 10'
+            self.dut.assertInText(self.to_check[0])
 
     def test_non_matching_output_does_not_advance_state(self):
         # Make sure we can match correct output even after failing to match something
@@ -241,3 +259,66 @@ class TestAssertSequentialStdout(unittest.TestCase):
             expected,
             self.dut.get_nearby_lines()
         )
+
+
+class TestAssertSequentialContextManager(unittest.TestCase):
+    # The following tests cover fewer cases than above, but use the launch runner to
+    # make a real proc_output object.  This serves as a sanity check for the above tests,
+    # and makes it easier to write tests for the assertSequentialOutput context manager
+
+    @classmethod
+    def setUpClass(cls):
+
+        TEST_PROC_PATH = os.path.join(
+            ament_index_python.get_package_prefix('launch_testing'),
+            'lib/launch_testing',
+            'terminating_proc'
+        )
+        TEST_CMD = [sys.executable, TEST_PROC_PATH]
+
+        proc_env = os.environ.copy()
+        proc_env['PYTHONUNBUFFERED'] = '1'
+
+        cls.proc_output = ActiveIoHandler()
+
+        cls.proc_1 = launch.actions.ExecuteProcess(
+            cmd=TEST_CMD + ['--arg1', '--arg2', '--arg3'],
+            name='terminating_proc',
+            env=proc_env
+        )
+
+        launch_description = launch.LaunchDescription([
+            cls.proc_1,
+            # This plumbs all the output to our IoHandler just like the LaunchTestRunner does
+            RegisterEventHandler(
+                OnProcessIO(
+                    on_stdout=cls.proc_output.append,
+                    on_stderr=cls.proc_output.append,
+                )
+            )
+        ])
+
+        launch_service = launch.LaunchService()
+        launch_service.include_launch_description(launch_description)
+        launch_service.run()
+
+    def test_passing_sequence(self):
+        with assertSequentialStdout(self.proc_output, self.proc_1) as cm:
+            cm.assertInStdout('Starting Up')
+            cm.assertInStdout('Ready')
+            cm.assertInStdout('--arg1')
+            cm.assertInStdout('--arg2')
+            cm.assertInStdout('--arg3')
+            cm.assertInStdout('Shutting Down')
+
+    def test_failing_sequence(self):
+        with self.assertRaises(AssertionError) as exc:
+            with assertSequentialStdout(self.proc_output, self.proc_1) as cm:
+                cm.assertInStdout('--arg1')
+                cm.assertInStdout('--arg2')
+                cm.assertInStdout('--arg3')
+
+                # This line should raise:
+                cm.assertInStdout('Ready')
+
+        self.assertIn('Ready', str(exc.exception))
