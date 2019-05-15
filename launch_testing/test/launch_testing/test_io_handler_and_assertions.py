@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import re
 import sys
 import unittest
 
@@ -172,3 +173,10 @@ class TestIoHandlerAndAssertions(unittest.TestCase):
     def test_asserts_on_missing_text_by_proc(self):
         with self.assertRaisesRegex(AssertionError, self.NOT_FOUND_TEXT):
             assertInStdout(self.proc_output, self.NOT_FOUND_TEXT, self.proc_2)
+
+    def test_works_with_regex(self):
+        assertInStdout(
+            self.proc_output,
+            re.compile(r"Called with arguments \S+"),
+            "terminating_proc-2"
+        )
