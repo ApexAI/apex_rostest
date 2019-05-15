@@ -11,7 +11,7 @@ stages:
     - curl http://repo.ros2.org/repos.key | apt-key add -
     - apt-get update
     - apt-get install -y python3-colcon-common-extensions
-    - source /opt/ros/crystal/setup.bash
+    - source /opt/ros/dashing/setup.bash
 
 # Template for jobs that want to build everything from source (much slower)
 .job_template: &src_job_template
@@ -56,7 +56,7 @@ stages:
     - rosdep install
       --from-paths upstream_src
       --ignore-src
-      --rosdistro crystal
+      --rosdistro dashing
       -y
       --skip-keys "console_bridge fastcdr fastrtps libopensplice67 libopensplice69 rti-connext-dds-5.3.1 urdfdom_headers"
 
