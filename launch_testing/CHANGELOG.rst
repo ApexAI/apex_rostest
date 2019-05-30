@@ -2,6 +2,18 @@
 Changelog for package launch_testing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.8.3 (2019-05-29)
+------------------
+* Changed behavior to use ``--isolated`` if no ``ROS_DOMAIN_ID`` is set to help parallel testing. (`#251 <https://github.com/ros2/launch/issues/251>`_)
+* Contributors: Peter Baughman
+
+0.8.2 (2019-05-20)
+------------------
+* add non-asserting waitFor method (`#243 <https://github.com/ros2/launch/issues/243>`_)
+* Enable reuse of launch testing functionality (`#236 <https://github.com/ros2/launch/issues/236>`_)
+* Stop randomizing ROS_DOMAIN_ID by default in launch tests (`#240 <https://github.com/ros2/launch/issues/240>`_)
+* Contributors: Dirk Thomas, Michel Hidalgo
+
 0.8.1 (2019-05-08)
 ------------------
 
