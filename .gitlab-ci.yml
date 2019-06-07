@@ -7,10 +7,6 @@ stages:
 .job_template: &bin_job_template
   image: osrf/ros2:nightly
   before_script:
-    - echo "deb [arch=amd64,arm64] http://repo.ros2.org/ubuntu/main `lsb_release -cs` main" > /etc/apt/sources.list.d/ros2-latest.list
-    - curl http://repo.ros2.org/repos.key | apt-key add -
-    - apt-get update
-    - apt-get install -y python3-colcon-common-extensions
     - source /opt/ros/dashing/setup.bash
 
 # Template for jobs that want to build everything from source (much slower)
@@ -19,15 +15,7 @@ stages:
     name: osrf/ros2:nightly
     entrypoint: [""]
   before_script:
-    - apt-get update && apt-get install -y 
-      build-essential 
-      cmake 
-      git 
-      python3-colcon-common-extensions 
-      python3-pip 
-      python-rosdep 
-      python3-vcstool 
-      wget
+    - apt-get update
     - python3 -m pip install -U 
       argcomplete 
       flake8 
